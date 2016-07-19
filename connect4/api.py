@@ -10,7 +10,7 @@ from protorpc import remote, messages
 from google.appengine.api import memcache
 from google.appengine.api import taskqueue
 
-from models import User, Game, Score
+from models import User, Game, Score, Disc
 from models import StringMessage, NewGameForm, GameForm, MakeMoveForm, \
     ScoreForms
 from utils import get_by_urlsafe
@@ -90,64 +90,102 @@ class Connect4Api(remote.Service):
         if game.game_over:
             return game.to_form('Game already over!')
 
+        if request.move_column < 0 or request.move_column > game.columns:
+            raise endpoints.BadRequestException('Column must be within game Boundaries')
+
+        game_discs = Disc.query(ancestor=game.key)
+        game_discs.filter(Disc.column == request.move_column)
+        rows_filled = game_discs.count()
+
+        if rows_filled >= game.rows:
+            raise endpoints.BadRequestException('Column is filled')
+
+        # do user move
         game.moves += 1
-        if request.guess == game.target:
+
+        disc = Disc(parent=game.key, user=game.user, column=request.move_column, row=rows_filled)
+        disc.put()
+
+        if game.check_win(user=game.user):
             game.end_game(True)
             return game.to_form('You win!')
 
-        if request.guess < game.target:
-            msg = 'Too low!'
-        else:
-            msg = 'Too high!'
-
-        if game.attempts_remaining < 1:
+        if game.check_full():
             game.end_game(False)
-            return game.to_form(msg + ' Game over!')
+            return game.to_form('Game over! No one wins! Player was last!')
+
+        # do AI move ...
+        ai_user = User.query(User.name == 'Computer').get()
+        if not ai_user:
+            raise endpoints.NotFoundException(
+                'No AI User!')
+
+        move_column = game.get_free_column()
+        game_discs = Disc.query(ancestor=game.key)
+        game_discs.filter(Disc.column == move_column)
+        rows_filled = game_discs.count()
+
+        disc = Disc(parent=game.key, user=ai_user.key, column=move_column, row=rows_filled)
+        disc.put()
+
+        # check_win() --> check AI win
+        if game.check_win(user=ai_user.key):
+            game.end_game(True)
+            return game.to_form('Game Over! You lost!')
+
+        if game.check_full():
+            game.end_game(False)
+            return game.to_form('Game over! No one wins! Computer was last!')
         else:
             game.put()
-            return game.to_form(msg)
 
-    @endpoints.method(response_message=ScoreForms,
-                      path='scores',
-                      name='get_scores',
-                      http_method='GET')
-    def get_scores(self, request):
-        """Return all scores"""
-        return ScoreForms(items=[score.to_form() for score in Score.query()])
+        return game.to_form('Nice try! Go on!')
 
-    @endpoints.method(request_message=USER_REQUEST,
-                      response_message=ScoreForms,
-                      path='scores/user/{user_name}',
-                      name='get_user_scores',
-                      http_method='GET')
-    def get_user_scores(self, request):
-        """Returns all of an individual User's scores"""
-        user = User.query(User.name == request.user_name).get()
-        if not user:
-            raise endpoints.NotFoundException(
-                'A User with that name does not exist!')
-        scores = Score.query(Score.user == user.key)
-        return ScoreForms(items=[score.to_form() for score in scores])
 
-    @endpoints.method(response_message=StringMessage,
-                      path='games/average_attempts',
-                      name='get_average_attempts_remaining',
-                      http_method='GET')
-    def get_average_attempts(self, request):
-        """Get the cached average moves remaining"""
-        return StringMessage(message=memcache.get(MEMCACHE_MOVES_REMAINING) or '')
+@endpoints.method(response_message=ScoreForms,
+                  path='scores',
+                  name='get_scores',
+                  http_method='GET')
+def get_scores(self, request):
+    """Return all scores"""
+    return ScoreForms(items=[score.to_form() for score in Score.query()])
 
-    @staticmethod
-    def _cache_average_attempts():
-        """Populates memcache with the average moves remaining of Games"""
-        games = Game.query(Game.game_over == False).fetch()
-        if games:
-            count = len(games)
-            total_attempts_remaining = sum([game.attempts_remaining
-                                            for game in games])
-            average = float(total_attempts_remaining) / count
-            memcache.set(MEMCACHE_MOVES_REMAINING,
-                         'The average moves remaining is {:.2f}'.format(average))
+
+@endpoints.method(request_message=USER_REQUEST,
+                  response_message=ScoreForms,
+                  path='scores/user/{user_name}',
+                  name='get_user_scores',
+                  http_method='GET')
+def get_user_scores(self, request):
+    """Returns all of an individual User's scores"""
+    user = User.query(User.name == request.user_name).get()
+    if not user:
+        raise endpoints.NotFoundException(
+            'A User with that name does not exist!')
+    scores = Score.query(Score.user == user.key)
+    return ScoreForms(items=[score.to_form() for score in scores])
+
+
+@endpoints.method(response_message=StringMessage,
+                  path='games/average_attempts',
+                  name='get_average_attempts_remaining',
+                  http_method='GET')
+def get_average_attempts(self, request):
+    """Get the cached average moves remaining"""
+    return StringMessage(message=memcache.get(MEMCACHE_MOVES_REMAINING) or '')
+
+
+@staticmethod
+def _cache_average_attempts():
+    """Populates memcache with the average moves remaining of Games"""
+    games = Game.query(Game.game_over == False).fetch()
+    if games:
+        count = len(games)
+        total_attempts_remaining = sum([game.attempts_remaining
+                                        for game in games])
+        average = float(total_attempts_remaining) / count
+        memcache.set(MEMCACHE_MOVES_REMAINING,
+                     'The average moves remaining is {:.2f}'.format(average))
 
 
 api = endpoints.api_server([Connect4Api])

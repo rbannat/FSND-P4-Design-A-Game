@@ -11,7 +11,14 @@ from google.appengine.ext import ndb
 class User(ndb.Model):
     """User profile"""
     name = ndb.StringProperty(required=True)
-    email =ndb.StringProperty()
+    email = ndb.StringProperty()
+
+
+class Disc(ndb.Model):
+    """Game Disc"""
+    user = ndb.KeyProperty(required=True, kind='User')
+    column = ndb.IntegerProperty(required=True)
+    row = ndb.IntegerProperty(required=True)
 
 
 class Game(ndb.Model):
@@ -52,8 +59,67 @@ class Game(ndb.Model):
         self.put()
         # Add the game to the score 'board'
         score = Score(user=self.user, date=date.today(), won=won,
-                      guesses=self.attempts_allowed - self.attempts_remaining)
+                      moves=self.moves)
         score.put()
+
+    def get_free_column(self):
+
+        rows_filled = self.rows
+        column = -1
+        while rows_filled >= self.rows:
+            column = random.randint(0, self.columns - 1)
+            game_discs = Disc.query(ancestor=self.key)
+            game_discs.filter(Disc.column == column)
+            rows_filled = game_discs.count()
+
+        return column
+
+    def check_full(self):
+        return Disc.query(ancestor=self.key).count() >= (self.columns * self.rows)
+
+    def check_win(self, user):
+        tile = user
+
+        # create game board
+        board = [[0 for i in range(self.rows)] for j in range(self.columns)]
+
+        # fill game board
+        game_discs = Disc.query(ancestor=self.key).fetch()
+        for disc in game_discs:
+            board[disc.column][disc.row] = disc.user
+
+        boardHeight = len(board[0])
+        boardWidth = len(board)
+
+        # check horizontal spaces
+        for y in range(boardHeight):
+            for x in range(boardWidth - 3):
+                if board[x][y] == tile and board[x + 1][y] == tile and board[x + 2][y] == tile and board[x + 3][
+                    y] == tile:
+                    return True
+
+        # check vertical spaces
+        for x in range(boardWidth):
+            for y in range(boardHeight - 3):
+                if board[x][y] == tile and board[x][y + 1] == tile and board[x][y + 2] == tile and board[x][
+                            y + 3] == tile:
+                    return True
+
+        # check / diagonal spaces
+        for x in range(boardWidth - 3):
+            for y in range(3, boardHeight):
+                if board[x][y] == tile and board[x + 1][y - 1] == tile and board[x + 2][y - 2] == tile and \
+                                board[x + 3][y - 3] == tile:
+                    return True
+
+        # check \ diagonal spaces
+        for x in range(boardWidth - 3):
+            for y in range(boardHeight - 3):
+                if board[x][y] == tile and board[x + 1][y + 1] == tile and board[x + 2][y + 2] == tile and \
+                                board[x + 3][y + 3] == tile:
+                    return True
+
+        return False
 
 
 class Score(ndb.Model):
@@ -61,11 +127,11 @@ class Score(ndb.Model):
     user = ndb.KeyProperty(required=True, kind='User')
     date = ndb.DateProperty(required=True)
     won = ndb.BooleanProperty(required=True)
-    guesses = ndb.IntegerProperty(required=True)
+    moves = ndb.IntegerProperty(required=True)
 
     def to_form(self):
         return ScoreForm(user_name=self.user.get().name, won=self.won,
-                         date=str(self.date), guesses=self.guesses)
+                         date=str(self.date), moves=self.moves)
 
 
 class GameForm(messages.Message):
@@ -88,7 +154,7 @@ class NewGameForm(messages.Message):
 
 class MakeMoveForm(messages.Message):
     """Used to make a move in an existing game"""
-    guess = messages.IntegerField(1, required=True)
+    move_column = messages.IntegerField(1, required=True)
 
 
 class ScoreForm(messages.Message):
@@ -96,7 +162,7 @@ class ScoreForm(messages.Message):
     user_name = messages.StringField(1, required=True)
     date = messages.StringField(2, required=True)
     won = messages.BooleanField(3, required=True)
-    guesses = messages.IntegerField(4, required=True)
+    moves = messages.IntegerField(4, required=True)
 
 
 class ScoreForms(messages.Message):
