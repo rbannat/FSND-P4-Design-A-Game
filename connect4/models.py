@@ -18,6 +18,7 @@ class Game(ndb.Model):
     """Game object"""
     rows = ndb.IntegerProperty(required=True)
     columns = ndb.IntegerProperty(required=True)
+    moves = ndb.IntegerProperty(required=True, default=0)
     game_over = ndb.BooleanProperty(required=True, default=False)
     user = ndb.KeyProperty(required=True, kind='User')
 
@@ -27,6 +28,7 @@ class Game(ndb.Model):
         game = Game(user=user,
                     rows=rows,
                     columns=columns,
+                    moves=0,
                     game_over=False)
         game.put()
         return game
@@ -38,6 +40,7 @@ class Game(ndb.Model):
         form.user_name = self.user.get().name
         form.rows = self.rows
         form.columns = self.columns
+        form.moves = self.moves
         form.game_over = self.game_over
         form.message = message
         return form
@@ -70,9 +73,10 @@ class GameForm(messages.Message):
     urlsafe_key = messages.StringField(1, required=True)
     rows = messages.IntegerField(2, required=True)
     columns = messages.IntegerField(3, required=True)
-    game_over = messages.BooleanField(4, required=True)
-    message = messages.StringField(5, required=True)
-    user_name = messages.StringField(6, required=True)
+    moves = messages.IntegerField(4, required=True)
+    game_over = messages.BooleanField(5, required=True)
+    message = messages.StringField(6, required=True)
+    user_name = messages.StringField(7, required=True)
 
 
 class NewGameForm(messages.Message):

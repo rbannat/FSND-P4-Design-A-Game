@@ -90,7 +90,7 @@ class Connect4Api(remote.Service):
         if game.game_over:
             return game.to_form('Game already over!')
 
-        game.attempts_remaining -= 1
+        game.moves += 1
         if request.guess == game.target:
             game.end_game(True)
             return game.to_form('You win!')
