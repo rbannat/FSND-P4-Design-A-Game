@@ -19,7 +19,7 @@ class SendReminderEmail(webapp2.RequestHandler):
         users = User.query(User.email != None)
         for user in users:
             subject = 'This is a reminder!'
-            body = 'Hello {}, try out Guess A Number!'.format(user.name)
+            body = 'Hello {}, try out Connect4!'.format(user.name)
             # This will send test emails, the arguments to send_mail are:
             # from, to, subject, body
             mail.send_mail('noreply@{}.appspotmail.com'.format(app_id),
