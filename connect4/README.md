@@ -51,6 +51,13 @@ given time. Each game can be retrieved or played by using the path parameter
     - Returns: GameForm with current game state.
     - Description: Returns the current state of a game.
 
+- **cancel_game**
+    - Path: 'game/{urlsafe_game_key}/cancel'
+    - Method: PUT
+    - Parameters: urlsafe_game_key
+    - Returns: GameForm with current game state.
+    - Description: Sets game_canceled to True. Returns the current state of a game.
+
 - **get_user_games**
     - Path: 'games/user/{user_name}'
     - Method: GET
@@ -106,7 +113,7 @@ given time. Each game can be retrieved or played by using the path parameter
 ##Forms Included:
  - **GameForm**
     - Representation of a Game's state (urlsafe_key, moves, columns, rows
-    game_over flag, message, user_name).
+    game_over flag, game_canceled, message, user_name).
  - **GameForms**
     - Multiple GameForm container.
  - **NewGameForm**

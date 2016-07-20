@@ -27,6 +27,7 @@ class Game(ndb.Model):
     columns = ndb.IntegerProperty(required=True)
     moves = ndb.IntegerProperty(required=True, default=0)
     game_over = ndb.BooleanProperty(required=True, default=False)
+    game_canceled = ndb.BooleanProperty(required=True, default=False)
     user = ndb.KeyProperty(required=True, kind='User')
 
     @classmethod
@@ -36,6 +37,7 @@ class Game(ndb.Model):
                     rows=rows,
                     columns=columns,
                     moves=0,
+                    game_canceled=False,
                     game_over=False)
         game.put()
         return game
@@ -49,6 +51,7 @@ class Game(ndb.Model):
         form.columns = self.columns
         form.moves = self.moves
         form.game_over = self.game_over
+        form.game_canceled = self.game_canceled
         form.message = message
         return form
 
@@ -142,8 +145,9 @@ class GameForm(messages.Message):
     columns = messages.IntegerField(3, required=True)
     moves = messages.IntegerField(4, required=True)
     game_over = messages.BooleanField(5, required=True)
-    message = messages.StringField(6, required=True)
-    user_name = messages.StringField(7, required=True)
+    game_canceled = messages.BooleanField(6, required=True)
+    message = messages.StringField(7, required=True)
+    user_name = messages.StringField(8, required=True)
 
 
 class GameForms(messages.Message):

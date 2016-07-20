@@ -79,6 +79,27 @@ class Connect4Api(remote.Service):
         else:
             raise endpoints.NotFoundException('Game not found!')
 
+    @endpoints.method(request_message=GET_GAME_REQUEST,
+                      response_message=GameForm,
+                      path='game/{urlsafe_game_key}/cancel',
+                      name='cancel_game',
+                      http_method='PUT')
+    def cancel_game(self, request):
+        game = get_by_urlsafe(request.urlsafe_game_key, Game)
+        if game:
+            # TODO: implement cancel method
+            if game.game_over:
+                raise endpoints.BadRequestException('Game already over!')
+            if game.game_canceled:
+                raise endpoints.BadRequestException('Game already canceled!')
+
+            game.game_canceled = True
+            game.put()
+
+            return game.to_form('Game canceled!')
+        else:
+            raise endpoints.NotFoundException('Game not found!')
+
     @endpoints.method(request_message=USER_REQUEST,
                       response_message=GameForms,
                       path='games/user/{user_name}',
@@ -105,6 +126,9 @@ class Connect4Api(remote.Service):
 
         if game.game_over:
             return game.to_form('Game already over!')
+
+        if game.game_canceled:
+            return game.to_form('Game has been canceled!')
 
         if request.move_column < 0 or request.move_column >= game.columns:
             raise endpoints.BadRequestException('Column must be within game Boundaries')
