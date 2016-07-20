@@ -11,12 +11,11 @@
  
  
 ##Game Description:
-Guess a number is a simple guessing game. Each game begins with a random 'target'
-number between the minimum and maximum values provided, and a maximum number of
-'attempts'. 'Guesses' are sent to the `make_move` endpoint which will reply
-with either: 'too low', 'too high', 'you win', or 'game over' (if the maximum
-number of attempts is reached).
-Many different Guess a Number games can be played by many different Users at any
+Connect Four is a two player connection game. Each game begins with a number of rows and columns.
+The players take turns and a chosen column is sent to the `make_move` endpoint which will stack a 'Game Disc'
+in the given column. If a player has 4 in a row horizontally, vertically or diagonal after his move he wins.
+
+Many different games can be played by many different Users at any
 given time. Each game can be retrieved or played by using the path parameter
 `urlsafe_game_key`.
 
@@ -40,12 +39,10 @@ given time. Each game can be retrieved or played by using the path parameter
  - **new_game**
     - Path: 'game'
     - Method: POST
-    - Parameters: user_name, min, max, attempts
+    - Parameters: user_name, columns, rows
     - Returns: GameForm with initial game state.
     - Description: Creates a new Game. user_name provided must correspond to an
-    existing user - will raise a NotFoundException if not. Min must be less than
-    max. Also adds a task to a task queue to update the average moves remaining
-    for active games.
+    existing user - will raise a NotFoundException if not.
      
  - **get_game**
     - Path: 'game/{urlsafe_game_key}'
@@ -57,9 +54,9 @@ given time. Each game can be retrieved or played by using the path parameter
  - **make_move**
     - Path: 'game/{urlsafe_game_key}'
     - Method: PUT
-    - Parameters: urlsafe_game_key, guess
+    - Parameters: urlsafe_game_key, move_column
     - Returns: GameForm with new game state.
-    - Description: Accepts a 'guess' and returns the updated state of the game.
+    - Description: Accepts a 'column' and returns the updated state of the game.
     If this causes a game to end, a corresponding Score entity will be created.
     
  - **get_scores**
@@ -91,18 +88,21 @@ given time. Each game can be retrieved or played by using the path parameter
     
  - **Game**
     - Stores unique game states. Associated with User model via KeyProperty.
+
+ - **Disc**
+    - Stores a game disc. Associated with Game model and User who made the move.
     
  - **Score**
     - Records completed games. Associated with Users model via KeyProperty.
     
 ##Forms Included:
  - **GameForm**
-    - Representation of a Game's state (urlsafe_key, attempts_remaining,
+    - Representation of a Game's state (urlsafe_key, moves, columns, rows
     game_over flag, message, user_name).
  - **NewGameForm**
-    - Used to create a new game (user_name, min, max, attempts)
+    - Used to create a new game (user_name, columns, rows)
  - **MakeMoveForm**
-    - Inbound make move form (guess).
+    - Inbound make move form (move_column). Creates a game disc.
  - **ScoreForm**
     - Representation of a completed game's Score (user_name, date, won flag,
     guesses).

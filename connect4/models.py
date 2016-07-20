@@ -78,6 +78,7 @@ class Game(ndb.Model):
         return Disc.query(ancestor=self.key).count() >= (self.columns * self.rows)
 
     def check_win(self, user):
+
         tile = user
 
         # create game board
