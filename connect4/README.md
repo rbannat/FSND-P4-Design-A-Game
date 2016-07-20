@@ -50,6 +50,14 @@ given time. Each game can be retrieved or played by using the path parameter
     - Parameters: urlsafe_game_key
     - Returns: GameForm with current game state.
     - Description: Returns the current state of a game.
+
+- **get_user_games**
+    - Path: 'games/user/{user_name}'
+    - Method: GET
+    - Parameters: user_name
+    - Returns: GameForms.
+    - Description: Returns all Games recorded by the provided player (unordered).
+    Will raise a NotFoundException if the User does not exist.
     
  - **make_move**
     - Path: 'game/{urlsafe_game_key}'
@@ -99,6 +107,8 @@ given time. Each game can be retrieved or played by using the path parameter
  - **GameForm**
     - Representation of a Game's state (urlsafe_key, moves, columns, rows
     game_over flag, message, user_name).
+ - **GameForms**
+    - Multiple GameForm container.
  - **NewGameForm**
     - Used to create a new game (user_name, columns, rows)
  - **MakeMoveForm**

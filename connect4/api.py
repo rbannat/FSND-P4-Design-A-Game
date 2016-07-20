@@ -12,7 +12,7 @@ from google.appengine.api import taskqueue
 
 from models import User, Game, Score, Disc
 from models import StringMessage, NewGameForm, GameForm, MakeMoveForm, \
-    ScoreForms
+    ScoreForms, GameForms
 from utils import get_by_urlsafe
 
 NEW_GAME_REQUEST = endpoints.ResourceContainer(NewGameForm)
@@ -78,6 +78,20 @@ class Connect4Api(remote.Service):
             return game.to_form('Time to make a move!')
         else:
             raise endpoints.NotFoundException('Game not found!')
+
+    @endpoints.method(request_message=USER_REQUEST,
+                      response_message=GameForms,
+                      path='games/user/{user_name}',
+                      name='get_user_games',
+                      http_method='GET')
+    def get_user_games(self, request):
+        """Returns all of an individual User's games"""
+        user = User.query(User.name == request.user_name).get()
+        if not user:
+            raise endpoints.NotFoundException(
+                'A User with that name does not exist!')
+        games = Game.query(Game.user == user.key)
+        return GameForms(items=[game.to_form('') for game in games])
 
     @endpoints.method(request_message=MAKE_MOVE_REQUEST,
                       response_message=GameForm,
