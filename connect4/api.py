@@ -86,15 +86,17 @@ class Connect4Api(remote.Service):
                       http_method='PUT')
     def make_move(self, request):
         """Makes a move. Returns a game state with message"""
+
         game = get_by_urlsafe(request.urlsafe_game_key, Game)
+
         if game.game_over:
             return game.to_form('Game already over!')
 
-        if request.move_column < 0 or request.move_column > game.columns:
+        if request.move_column < 0 or request.move_column >= game.columns:
             raise endpoints.BadRequestException('Column must be within game Boundaries')
 
         game_discs = Disc.query(ancestor=game.key)
-        game_discs.filter(Disc.column == request.move_column)
+        game_discs = game_discs.filter(Disc.column == request.move_column)
         rows_filled = game_discs.count()
 
         if rows_filled >= game.rows:
@@ -122,7 +124,7 @@ class Connect4Api(remote.Service):
 
         move_column = game.get_free_column()
         game_discs = Disc.query(ancestor=game.key)
-        game_discs.filter(Disc.column == move_column)
+        game_discs = game_discs.filter(Disc.column == move_column)
         rows_filled = game_discs.count()
 
         disc = Disc(parent=game.key, user=ai_user.key, column=move_column, row=rows_filled)

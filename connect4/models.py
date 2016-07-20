@@ -67,9 +67,9 @@ class Game(ndb.Model):
         rows_filled = self.rows
         column = -1
         while rows_filled >= self.rows:
-            column = random.randint(0, self.columns - 1)
+            column = random.randrange(0, self.columns)
             game_discs = Disc.query(ancestor=self.key)
-            game_discs.filter(Disc.column == column)
+            game_discs = game_discs.filter(Disc.column == column)
             rows_filled = game_discs.count()
 
         return column
