@@ -89,6 +89,12 @@ given time. Each game can be retrieved or played by using the path parameter
     - Description: Returns all Scores recorded by the provided player (unordered).
     Will raise a NotFoundException if the User does not exist.
     
+ - **get_user_rankings**
+    - Path: 'rankings'
+    - Method: GET
+    - Returns: RankingForms. 
+    - Description: Returns user rankings ordered by highest win ratio.
+    
  - **get_active_game_count**
     - Path: 'games/active'
     - Method: GET
@@ -125,5 +131,9 @@ given time. Each game can be retrieved or played by using the path parameter
     guesses).
  - **ScoreForms**
     - Multiple ScoreForm container.
+  - **RankingForm**
+    - Representation of a players win/loss ratio (user_name, win_ratio)
+ - **RankingForms**
+    - Multiple RankingForm container.
  - **StringMessage**
     - General purpose String container.
