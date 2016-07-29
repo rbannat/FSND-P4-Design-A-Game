@@ -1,0 +1,16 @@
+What additional properties did you add to your models and why?
+
+To implement Connect4 I added rows, columns and moves to the game model representing a Connect4 game with the number of
+moves being made as well as a flag for a canceled game. I added a Disc model representing the moves of a player
+inserting a disc into the board. Its properties are the column and row it has been inserted to and the player who played
+the disc.
+Also I added a GameHistoryEntry model representing a move being made during a game with game, column(move), result and
+timestamp as parameters to show the whole game process.
+
+
+What were some of the trade-offs or struggles you faced when implementing the new game logic?
+
+Implementing the new game logic with the ai as opponent was quite tricky.
+I decided to only enable playing against ai for now, but replacing the ai with real players won't be difficult.
+Also it needed to be checked whether the game is over (board is full or player wins or ai wins) after each move by
+player and ai. Using the query filters was challenging because of the many restrictions concerning inequality.
