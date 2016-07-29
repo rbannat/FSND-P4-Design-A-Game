@@ -10,9 +10,9 @@ from protorpc import remote, messages
 from google.appengine.api import memcache
 from google.appengine.api import taskqueue
 
-from models import User, Game, Score, Disc
+from models import User, Game, Score, Disc, GameHistoryEntry
 from models import StringMessage, NewGameForm, GameForm, MakeMoveForm, \
-    ScoreForms, RankingForms, RankingForm, GameForms
+    ScoreForms, RankingForms, RankingForm, GameForms, GameHistoryForms
 from utils import get_by_urlsafe
 
 NEW_GAME_REQUEST = endpoints.ResourceContainer(NewGameForm)
@@ -76,6 +76,20 @@ class Connect4Api(remote.Service):
         game = get_by_urlsafe(request.urlsafe_game_key, Game)
         if game:
             return game.to_form('Game found!')
+        else:
+            raise endpoints.NotFoundException('Game not found!')
+
+    @endpoints.method(request_message=GET_GAME_REQUEST,
+                      response_message=GameHistoryForms,
+                      path='game/{urlsafe_game_key}/history',
+                      name='get_game_history',
+                      http_method='GET')
+    def get_game_history(self, request):
+        """Return the history for the given game."""
+        game = get_by_urlsafe(request.urlsafe_game_key, Game)
+        if game:
+            history_entry = GameHistoryEntry.query(GameHistoryEntry.game == game.key).order(GameHistoryEntry.created_at)
+            return GameHistoryForms(items=[entry.to_form() for entry in history_entry])
         else:
             raise endpoints.NotFoundException('Game not found!')
 
@@ -148,12 +162,24 @@ class Connect4Api(remote.Service):
         disc.put()
 
         if game.check_win(user=game.user):
+            # end game
             game.end_game(True)
+
+            # store history entry
+            game.store_history_entry(move=request.move_column, result="won")
+
             return game.to_form('You win!')
 
         if game.check_full():
             game.end_game(False)
+
+            # store history entry
+            game.store_history_entry(move=request.move_column, result="game ended with no winner")
+
             return game.to_form('Game over! No one wins! Player was last!')
+        else:
+            # store history entry
+            game.store_history_entry(move=request.move_column, result="player made move")
 
         # do AI move ...
         ai_user = User.query(User.name == 'Computer').get()
@@ -172,13 +198,24 @@ class Connect4Api(remote.Service):
         # check_win() --> check AI win
         if game.check_win(user=ai_user.key):
             game.end_game(False)
+
+            # store history entry
+            game.store_history_entry(move=move_column, result="game lost")
+
             return game.to_form('Game Over! You lost!')
 
         if game.check_full():
             game.end_game(False)
+
+            # store history entry
+            game.store_history_entry(move=move_column, result="game ended with no winner")
+
             return game.to_form('Game over! No one wins! Computer was last!')
         else:
             game.put()
+
+            # store history entry
+            game.store_history_entry(move=request.move_column, result="computer made move")
 
         return game.to_form('Nice try! Go on!')
 

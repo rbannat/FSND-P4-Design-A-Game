@@ -5,6 +5,7 @@ classes they can include methods (such as 'to_form' and 'new_game')."""
 import random
 from datetime import date
 from protorpc import messages
+from protorpc import message_types
 from google.appengine.ext import ndb
 
 
@@ -64,6 +65,10 @@ class Game(ndb.Model):
         score = Score(user=self.user, date=date.today(), won=won,
                       moves=self.moves)
         score.put()
+
+    def store_history_entry(self, move, result):
+        history_entry = GameHistoryEntry(game=self.key, move=move, result=result)
+        history_entry.put()
 
     def get_free_column(self):
 
@@ -136,6 +141,31 @@ class Score(ndb.Model):
     def to_form(self):
         return ScoreForm(user_name=self.user.get().name, won=self.won,
                          date=str(self.date), moves=self.moves)
+
+
+class GameHistoryEntry(ndb.Model):
+    """Game history object"""
+    game = ndb.KeyProperty(required=True, kind='Game')
+    move = ndb.IntegerProperty(required=True)
+    result = ndb.StringProperty(required=True)
+    created_at = ndb.DateTimeProperty(auto_now_add=True)
+
+    def to_form(self):
+        return GameHistoryForm(urlsafe_key=self.key.urlsafe(), move=self.move,
+                               result=self.result, created_at=self.created_at)
+
+
+class GameHistoryForm(messages.Message):
+    """GameHistoryForm for outbound game history information"""
+    urlsafe_key = messages.StringField(1, required=True)
+    move = messages.IntegerField(2, required=True)
+    result = messages.StringField(3, required=True)
+    created_at = message_types.DateTimeField(4)
+
+
+class GameHistoryForms(messages.Message):
+    """Return multiple GameHistoryForms"""
+    items = messages.MessageField(GameHistoryForm, 1, repeated=True)
 
 
 class GameForm(messages.Message):

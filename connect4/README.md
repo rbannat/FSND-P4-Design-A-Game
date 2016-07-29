@@ -50,6 +50,13 @@ given time. Each game can be retrieved or played by using the path parameter
     - Parameters: urlsafe_game_key
     - Returns: GameForm with current game state.
     - Description: Returns the current state of a game.
+ 
+ - **get_game_history**
+    - Path: 'game/{urlsafe_game_key}/history'
+    - Method: GET
+    - Parameters: urlsafe_game_key
+    - Returns: GameHistoryForms with current game history.
+    - Description: Returns the history of a game.
 
 - **cancel_game**
     - Path: 'game/{urlsafe_game_key}/cancel'
@@ -109,6 +116,9 @@ given time. Each game can be retrieved or played by using the path parameter
     
  - **Game**
     - Stores unique game states. Associated with User model via KeyProperty.
+     
+ - **GameHistoryEntry**
+    - Stores unique game history entry. Associated with Game model via KeyProperty.
 
  - **Disc**
     - Stores a game disc. Associated with Game model and User who made the move.
@@ -126,6 +136,10 @@ given time. Each game can be retrieved or played by using the path parameter
     - Used to create a new game (user_name, columns, rows)
  - **MakeMoveForm**
     - Inbound make move form (move_column). Creates a game disc.
+ - **GameHistoryForm**
+    - Representation of a game history entry (game, move, result).
+ - **GameHistoryForms**
+    - Multiple GameHistoryForm container.
  - **ScoreForm**
     - Representation of a completed game's Score (user_name, date, won flag,
     guesses).
