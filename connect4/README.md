@@ -19,6 +19,10 @@ Many different games can be played by many different Users at any
 given time. Each game can be retrieved or played by using the path parameter
 `urlsafe_game_key`.
 
+##Score Keeping:
+After each game the count of user played discs is saved together with whether the user has won or not. For ranking 
+purposes a win/loss ratio in respect to all played games is documented.
+
 ##Files Included:
  - api.py: Contains endpoints and game playing logic.
  - app.yaml: App configuration.
