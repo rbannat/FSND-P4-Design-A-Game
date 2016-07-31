@@ -224,7 +224,7 @@ class Connect4Api(remote.Service):
         items = []
 
         # get all users
-        query = User.query()
+        query = User.query(User.name != 'Computer')
 
         for user in query:
             # get score count
