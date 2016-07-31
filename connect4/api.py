@@ -32,7 +32,18 @@ class Connect4Api(remote.Service):
                       name='create_user',
                       http_method='POST')
     def create_user(self, request):
-        """Create a User. Requires a unique username"""
+        """Creates a User.
+
+        Args:
+            request: The USER_REQUEST objects, which includes a users
+                chosen name and an optional email.
+        Returns:
+            StringMessage: A message that is sent to the client, saying that
+                the user has been created.
+        Raises:
+            endpoints.ConflictException: If the user already exists.
+        """
+
         if User.query(User.name == request.user_name).get():
             raise endpoints.ConflictException(
                 'A User with that name already exists!')
