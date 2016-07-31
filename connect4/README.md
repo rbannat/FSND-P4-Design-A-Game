@@ -1,4 +1,4 @@
-#Full Stack Nanodegree Project 4 Refresh
+# Full Stack Nanodegree Project 4 Refresh
 
 ## Set-Up Instructions:
 1.  Update the value of application in app.yaml to the app ID you have registered
@@ -10,7 +10,7 @@
  
  
  
-##Game Description:
+## Game Description:
 Connect Four is a two player connection game. Each game begins with a number of rows and columns.
 The players take turns and a chosen column is sent to the `make_move` endpoint which will stack a 'Game Disc'
 in the given column. If a player has 4 in a row horizontally, vertically or diagonal after his move he wins.
@@ -19,11 +19,11 @@ Many different games can be played by many different Users at any
 given time. Each game can be retrieved or played by using the path parameter
 `urlsafe_game_key`.
 
-##Score Keeping:
+## Score Keeping:
 After each game the count of user played discs is saved together with whether the user has won or not. For ranking 
 purposes a win/loss ratio in respect to all played games is documented.
 
-##Files Included:
+## Files Included:
  - api.py: Contains endpoints and game playing logic.
  - app.yaml: App configuration.
  - cron.yaml: Cronjob configuration.
@@ -31,7 +31,7 @@ purposes a win/loss ratio in respect to all played games is documented.
  - models.py: Entity and message definitions including helper methods.
  - utils.py: Helper function for retrieving ndb.Models by urlsafe Key string.
 
-##Endpoints Included:
+## Endpoints Included:
  - **create_user**
     - Path: 'user'
     - Method: POST
@@ -114,7 +114,7 @@ purposes a win/loss ratio in respect to all played games is documented.
     - Description: Gets the average number of attempts remaining for all games
     from a previously cached memcache key.
 
-##Models Included:
+## Models Included:
  - **User**
     - Stores unique user_name and (optional) email address.
     
@@ -130,7 +130,7 @@ purposes a win/loss ratio in respect to all played games is documented.
  - **Score**
     - Records completed games. Associated with Users model via KeyProperty.
     
-##Forms Included:
+## Forms Included:
  - **GameForm**
     - Representation of a Game's state (urlsafe_key, moves, columns, rows
     game_over flag, game_canceled, message, user_name).
