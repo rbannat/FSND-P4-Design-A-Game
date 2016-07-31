@@ -175,7 +175,7 @@ class Connect4Api(remote.Service):
             return game.to_form('Game over! No one wins! Player was last!')
         else:
             # store history entry
-            game.store_history_entry(move=request.move_column, result="player made move")
+            game.store_history_entry(column=request.move_column, row=rows_filled, result="player made move")
 
         # do AI move ...
         ai_user = User.query(User.name == 'Computer').get()
@@ -186,9 +186,9 @@ class Connect4Api(remote.Service):
         move_column = game.get_free_column()
         game_discs = Disc.query(ancestor=game.key)
         game_discs = game_discs.filter(Disc.column == move_column)
-        rows_filled = game_discs.count()
+        ai_rows_filled = game_discs.count()
 
-        disc = Disc(parent=game.key, user=ai_user.key, column=move_column, row=rows_filled)
+        disc = Disc(parent=game.key, user=ai_user.key, column=move_column, row=ai_rows_filled)
         disc.put()
 
         # check_win() --> check AI win
@@ -211,7 +211,7 @@ class Connect4Api(remote.Service):
             game.put()
 
             # store history entry
-            game.store_history_entry(move=request.move_column, result="computer made move")
+            game.store_history_entry(column=move_column, row=ai_rows_filled, result="Computer made move")
 
         return game.to_form('Nice try! Go on!')
 

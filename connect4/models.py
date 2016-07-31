@@ -64,8 +64,8 @@ class Game(ndb.Model):
                       moves=self.moves)
         score.put()
 
-    def store_history_entry(self, move, result):
-        history_entry = GameHistoryEntry(game=self.key, move=move, result=result)
+    def store_history_entry(self, column, row, result):
+        history_entry = GameHistoryEntry(game=self.key, column=column, row=row, result=result)
         history_entry.put()
 
     def get_free_column(self):
@@ -144,21 +144,23 @@ class Score(ndb.Model):
 class GameHistoryEntry(ndb.Model):
     """Game history object"""
     game = ndb.KeyProperty(required=True, kind='Game')
-    move = ndb.IntegerProperty(required=True)
+    column = ndb.IntegerProperty(required=True)
+    row = ndb.IntegerProperty(required=True)
     result = ndb.StringProperty(required=True)
     created_at = ndb.DateTimeProperty(auto_now_add=True)
 
     def to_form(self):
-        return GameHistoryForm(urlsafe_key=self.key.urlsafe(), move=self.move,
-                               result=self.result, created_at=self.created_at)
+        return GameHistoryForm(urlsafe_key=self.key.urlsafe(), column=self.column,
+                               row=self.row, result=self.result, created_at=self.created_at)
 
 
 class GameHistoryForm(messages.Message):
     """GameHistoryForm for outbound game history information"""
     urlsafe_key = messages.StringField(1, required=True)
-    move = messages.IntegerField(2, required=True)
-    result = messages.StringField(3, required=True)
-    created_at = message_types.DateTimeField(4)
+    column = messages.IntegerField(2, required=True)
+    row = messages.IntegerField(3, required=True)
+    result = messages.StringField(4, required=True)
+    created_at = message_types.DateTimeField(5)
 
 
 class GameHistoryForms(messages.Message):
