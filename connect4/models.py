@@ -30,6 +30,7 @@ class Game(ndb.Model):
     game_over = ndb.BooleanProperty(required=True, default=False)
     game_canceled = ndb.BooleanProperty(required=True, default=False)
     user = ndb.KeyProperty(required=True, kind='User')
+    board = ndb.StringProperty(repeated=True)
 
     @classmethod
     def new_game(cls, user):
@@ -39,7 +40,9 @@ class Game(ndb.Model):
                     columns=7,
                     moves=0,
                     game_canceled=False,
-                    game_over=False)
+                    game_over=False,
+                    board=[])
+
         game.put()
         return game
 
@@ -52,6 +55,7 @@ class Game(ndb.Model):
         form.game_over = self.game_over
         form.game_canceled = self.game_canceled
         form.message = message
+        form.board = self.board
         return form
 
     def end_game(self, won=False):
@@ -67,6 +71,19 @@ class Game(ndb.Model):
     def store_history_entry(self, column, row, result):
         history_entry = GameHistoryEntry(game=self.key, column=column, row=row, result=result)
         history_entry.put()
+
+    def store_game_state(self):
+        # store game state
+        ai_user = User.query(User.name == 'Computer').get()
+        board = [['_' for i in range(self.rows)] for j in range(self.columns)]
+        game_discs = Disc.query(ancestor=self.key).fetch()
+        for disc in game_discs:
+            if disc.user == ai_user.key:
+                board[disc.column][disc.row] = 'X'
+            else:
+                board[disc.column][disc.row] = 'O'
+
+        self.board = [' '.join([str(c) for c in lst]) for lst in board]
 
     def get_free_column(self):
 
@@ -176,6 +193,7 @@ class GameForm(messages.Message):
     game_canceled = messages.BooleanField(4, required=True)
     message = messages.StringField(5, required=True)
     user_name = messages.StringField(6, required=True)
+    board = messages.StringField(7, repeated=True)
 
 
 class GameForms(messages.Message):

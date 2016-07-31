@@ -8,8 +8,6 @@
 1.  (Optional) Generate your client library(ies) with the endpoints tool.
  Deploy your application.
  
- 
- 
 ## Game Description:
 Connect Four is a two player connection game. Each game begins with a number of rows and columns.
 The players take turns and a chosen column is sent to the `make_move` endpoint which will stack a 'Game Disc'
@@ -53,7 +51,8 @@ purposes a win/loss ratio in respect to all played games is documented.
     - Method: GET
     - Parameters: urlsafe_game_key
     - Returns: GameForm with current game state.
-    - Description: Returns the current state of a game.
+    - Description: Returns the current state of a game. The `board` property represents the current game state where 'O' 
+      is a Users disc and 'X' is the AI's disc.
  
  - **get_game_history**
     - Path: 'game/{urlsafe_game_key}/history'

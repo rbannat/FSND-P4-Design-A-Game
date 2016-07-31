@@ -170,7 +170,9 @@ class Connect4Api(remote.Service):
             game.end_game(True)
 
             # store history entry
-            game.store_history_entry(move=request.move_column, result="won")
+            game.store_history_entry(column=request.move_column, row=rows_filled, result="won")
+            # store game state
+            game.store_game_state()
 
             return game.to_form('You win!')
 
@@ -178,12 +180,16 @@ class Connect4Api(remote.Service):
             game.end_game(False)
 
             # store history entry
-            game.store_history_entry(move=request.move_column, result="game ended with no winner")
+            game.store_history_entry(column=request.move_column, row=rows_filled, result="game ended with no winner")
+            # store game state
+            game.store_game_state()
 
             return game.to_form('Game over! No one wins! Player was last!')
         else:
             # store history entry
             game.store_history_entry(column=request.move_column, row=rows_filled, result="player made move")
+            # store game state
+            game.store_game_state()
 
         # do AI move ...
         ai_user = User.query(User.name == 'Computer').get()
@@ -204,7 +210,9 @@ class Connect4Api(remote.Service):
             game.end_game(False)
 
             # store history entry
-            game.store_history_entry(move=move_column, result="game lost")
+            game.store_history_entry(column=move_column, row=ai_rows_filled, result="game lost")
+            # store game state
+            game.store_game_state()
 
             return game.to_form('Game Over! You lost!')
 
@@ -212,7 +220,9 @@ class Connect4Api(remote.Service):
             game.end_game(False)
 
             # store history entry
-            game.store_history_entry(move=move_column, result="game ended with no winner")
+            game.store_history_entry(column=move_column, row=ai_rows_filled, result="game ended with no winner")
+            # store game state
+            game.store_game_state()
 
             return game.to_form('Game over! No one wins! Computer was last!')
         else:
@@ -220,6 +230,8 @@ class Connect4Api(remote.Service):
 
             # store history entry
             game.store_history_entry(column=move_column, row=ai_rows_filled, result="Computer made move")
+            # store game state
+            game.store_game_state()
 
         return game.to_form('Nice try! Go on!')
 
