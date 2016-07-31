@@ -56,7 +56,7 @@ class Connect4Api(remote.Service):
             raise endpoints.NotFoundException(
                 'A User with that name does not exist!')
 
-        game = Game.new_game(user.key, request.rows, request.columns)
+        game = Game.new_game(user.key)
 
         return game.to_form('Good luck playing Connect4!')
 
@@ -121,6 +121,8 @@ class Connect4Api(remote.Service):
             raise endpoints.NotFoundException(
                 'A User with that name does not exist!')
         games = Game.query(Game.user == user.key)
+        games = games.filter(Game.game_canceled == False)
+        games = games.filter(Game.game_over == False)
         return GameForms(items=[game.to_form('') for game in games])
 
     @endpoints.method(request_message=MAKE_MOVE_REQUEST,

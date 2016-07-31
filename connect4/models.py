@@ -32,11 +32,11 @@ class Game(ndb.Model):
     user = ndb.KeyProperty(required=True, kind='User')
 
     @classmethod
-    def new_game(cls, user, rows, columns):
+    def new_game(cls, user):
         """Creates and returns a new game"""
         game = Game(user=user,
-                    rows=rows,
-                    columns=columns,
+                    rows=6,
+                    columns=7,
                     moves=0,
                     game_canceled=False,
                     game_over=False)
@@ -48,8 +48,6 @@ class Game(ndb.Model):
         form = GameForm()
         form.urlsafe_key = self.key.urlsafe()
         form.user_name = self.user.get().name
-        form.rows = self.rows
-        form.columns = self.columns
         form.moves = self.moves
         form.game_over = self.game_over
         form.game_canceled = self.game_canceled
@@ -171,13 +169,11 @@ class GameHistoryForms(messages.Message):
 class GameForm(messages.Message):
     """GameForm for outbound game state information"""
     urlsafe_key = messages.StringField(1, required=True)
-    rows = messages.IntegerField(2, required=True)
-    columns = messages.IntegerField(3, required=True)
-    moves = messages.IntegerField(4, required=True)
-    game_over = messages.BooleanField(5, required=True)
-    game_canceled = messages.BooleanField(6, required=True)
-    message = messages.StringField(7, required=True)
-    user_name = messages.StringField(8, required=True)
+    moves = messages.IntegerField(2, required=True)
+    game_over = messages.BooleanField(3, required=True)
+    game_canceled = messages.BooleanField(4, required=True)
+    message = messages.StringField(5, required=True)
+    user_name = messages.StringField(6, required=True)
 
 
 class GameForms(messages.Message):
@@ -188,8 +184,6 @@ class GameForms(messages.Message):
 class NewGameForm(messages.Message):
     """Used to create a new game"""
     user_name = messages.StringField(1, required=True)
-    rows = messages.IntegerField(2, default=6)
-    columns = messages.IntegerField(3, default=7)
 
 
 class MakeMoveForm(messages.Message):
